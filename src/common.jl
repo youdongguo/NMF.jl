@@ -61,6 +61,9 @@ gettracetime(updater::NMFUpdater) = gettracetime(gettrace(updater))
 gettraceobjective(trace::Trace) = trace.objective
 gettracetime(trace::Trace) = trace.time
 
+getdelta(::NMFUpdater{T}) where T = zero(T)
+
+
 function nmf_skeleton!(updater::NMFUpdater{T},
                        X, W::Matrix{T}, H::Matrix{T},
                        maxiter::Int, verbose::Bool, tol) where T

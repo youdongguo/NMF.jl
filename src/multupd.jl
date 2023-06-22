@@ -42,12 +42,12 @@ mutable struct MultUpdate{T}
     end
 end
 
-function solve!(alg::MultUpdate{T}, X, W, H) where T
+function solve!(alg::MultUpdate{T}, X, W, H; trace::Trace{T}=Trace{T}(), mu_perturb = sqrt(eps(T))) where T
 
     if alg.obj == :mse
         nmf_skeleton!(MultUpdMSE(alg.update_H, alg.lambda_w, alg.lambda_h, sqrt(eps(T))), X, W, H, alg.maxiter, alg.verbose, alg.tol)
     else # alg == :div
-        nmf_skeleton!(MultUpdDiv(alg.update_H, alg.lambda_w, alg.lambda_h, sqrt(eps(T))), X, W, H, alg.maxiter, alg.verbose, alg.tol)
+        nmf_skeleton!(MultUpdDiv(alg.update_H, alg.lambda_w, alg.lambda_h, mu_perturb, trace), X, W, H, alg.maxiter, alg.verbose, alg.tol)
     end
 end
 
@@ -123,6 +123,7 @@ struct MultUpdDiv{T} <: NMFUpdater{T}
     lambda_w::T
     lambda_h::T
     delta::T
+    trace::Trace{T}
 end
 
 struct MultUpdDiv_State{T}
@@ -132,10 +133,10 @@ struct MultUpdDiv_State{T}
     Q::Matrix{T}      # X ./ (WH + lambda): size (p, n)
     WtQ::Matrix{T}    # W' * Q: size (k, n)
     QHt::Matrix{T}    # Q * H': size (p, k)
-
-    function MultUpdDiv_State{T}(X, W::Matrix{T}, H::Matrix{T}) where T
+    
+    function MultUpdDiv_State{T}(X, W::Matrix{T}, H::Matrix{T}, delta) where T
         p, n, k = nmf_checksize(X, W, H)
-        new{T}(W * H,
+        new{T}(W * H .+ delta,
                Matrix{T}(undef, 1, k),
                Matrix{T}(undef, k, 1),
                Matrix{T}(undef, p, n),
@@ -144,8 +145,11 @@ struct MultUpdDiv_State{T}
     end
 end
 
-prepare_state(::MultUpdDiv{T}, X, W, H) where T = MultUpdDiv_State{T}(X, W, H)
+prepare_state(upd::MultUpdDiv{T}, X, W, H) where T = MultUpdDiv_State{T}(X, W, H, getdelta(upd))
 evaluate_objv(::MultUpdDiv, s::MultUpdDiv_State, X, W, H) = gkldiv(X, s.WH)
+
+gettrace(updater::MultUpdDiv) = updater.trace
+getdelta(updater::MultUpdDiv) = updater.delta
 
 function update_wh!(upd::MultUpdDiv{T}, s::MultUpdDiv_State{T}, X, W::Matrix{T}, H::Matrix{T}) where T
 
@@ -166,11 +170,11 @@ function update_wh!(upd::MultUpdDiv{T}, s::MultUpdDiv_State{T}, X, W::Matrix{T},
     QHt = s.QHt
 
     @assert size(Q) == size(X)
-
+    
     # update H
     if upd.update_H
         @inbounds for i = 1:length(X)
-            Q[i] = X[i] / (WH[i] + delta)
+            Q[i] = X[i] / WH[i]
         end
         mul!(WtQ, transpose(W), Q)
         sum!(fill!(sW, 0), W)
@@ -178,11 +182,12 @@ function update_wh!(upd::MultUpdDiv{T}, s::MultUpdDiv_State{T}, X, W::Matrix{T},
             H[i,j] *= (WtQ[i,j] / (sW[i] + lambda_h))
         end
         mul!(WH, W, H)
+        WH .= WH.+delta
     end
 
     # update W
     @inbounds for i = 1:length(X)
-        Q[i] = X[i] / (WH[i] + delta)
+        Q[i] = X[i] / WH[i]
     end
     mul!(QHt, Q, transpose(H))
     sum!(fill!(sH, 0), H)
@@ -190,4 +195,5 @@ function update_wh!(upd::MultUpdDiv{T}, s::MultUpdDiv_State{T}, X, W::Matrix{T},
         W[i,j] *= (QHt[i,j] / (sH[j] + lambda_w))
     end
     mul!(WH, W, H)
+    WH .= WH.+delta
 end
