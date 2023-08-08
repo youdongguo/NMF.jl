@@ -46,9 +46,9 @@ mutable struct CoordinateDescent{T}
 end
 
 
-solve!(alg::CoordinateDescent{T}, X, W, H; trace::Trace{T}=Trace{T}()) where {T} =
+solve!(alg::CoordinateDescent{T}, X, W, H; trace::Trace{T}=Trace{T}(), stop_condition::Union{Nothing, Symbol, Function} = nothing) where {T} =
     nmf_skeleton!(CoordinateDescentUpd{T}(alg.α, alg.l₁ratio, alg.regularization, alg.shuffle, alg.update_H, trace),
-                  X, W, H, alg.maxiter, alg.verbose, alg.tol)
+                  X, W, H, alg.maxiter, alg.verbose, alg.tol, stop_condition = stop_condition)
 
 
 struct CoordinateDescentUpd{T} <: NMFUpdater{T}

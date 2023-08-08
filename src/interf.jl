@@ -11,7 +11,8 @@ function nnmf(X::AbstractMatrix{T}, k::Integer;
               H0::Union{AbstractMatrix{T}, Nothing}=nothing,
               update_H::Bool=true,
               verbose::Bool=false,
-              trace::Trace{T}=Trace{T}()) where T
+              trace::Trace{T}=Trace{T}(),
+              stop_condition::Union{Nothing, Symbol, Function} = nothing) where T
 
     eltype(X) <: Number && all(t -> t >= zero(T), X) || throw(ArgumentError("The elements of X must be non-negative."))
 
@@ -80,7 +81,7 @@ function nnmf(X::AbstractMatrix{T}, k::Integer;
 
     # run optimization
     if alg == :cd
-        ret = solve!(alginst, X, W, H, trace=trace)
+        ret = solve!(alginst, X, W, H, trace=trace, stop_condition=stop_condition)
     else
         ret = solve!(alginst, X, W, H)
     end

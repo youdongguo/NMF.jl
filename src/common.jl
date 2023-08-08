@@ -63,7 +63,7 @@ gettracetime(trace::Trace) = trace.time
 
 function nmf_skeleton!(updater::NMFUpdater{T},
                        X, W::Matrix{T}, H::Matrix{T},
-                       maxiter::Int, verbose::Bool, tol) where T
+                       maxiter::Int, verbose::Bool, tol; stop_condition::Union{Nothing, Symbol,Function} = nothing) where T
     objv = convert(T, NaN)
 
     # init
@@ -89,9 +89,20 @@ function nmf_skeleton!(updater::NMFUpdater{T},
         update_wh!(updater, state, X, W, H)
 
         # determine convergence
-        dev = max(maxad(preW, W), maxad(preH, H))
-        if dev < tol
-            converged = true
+        if stop_condition === nothing
+            dev = max(maxad(preW, W), maxad(preH, H))
+            if dev < tol
+                converged = true
+            end
+        # elseif stop_condition == :fit
+        #     preobjv = objv
+        #     objv = evaluate_objv(updater, state, X, W, H) 
+        #     dev = abs(objv - preobjv)/preobjv
+        #     if dev < tol
+        #         converged = true
+        #     end
+        else
+            converged = stop_condition(X, W, preW, H, preH, tol)
         end
 
         # display and trace info
