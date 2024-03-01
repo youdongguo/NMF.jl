@@ -1,6 +1,6 @@
 # Interface function: nnmf
 
-function nnmf(X::AbstractMatrix{T}, k::Integer;
+function nnmf(X::Union{AbstractMatrix{T}, Factorization{T}}, k::Integer;
               init::Symbol=:nndsvdar,
               initdata=nothing,
               alg::Symbol=:greedycd,

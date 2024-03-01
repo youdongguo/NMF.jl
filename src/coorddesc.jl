@@ -80,7 +80,7 @@ struct CoordinateDescentUpd{T} <: NMFUpdater{T}
 end
 
 mutable struct CoordinateDescentState{T}
-    WH::Matrix{T}
+    WH::Union{Matrix{T}, Factorization{T}}
     HHt::Matrix{T}
     XHt::Matrix{T}
     XtW::Matrix{T}
@@ -89,7 +89,7 @@ mutable struct CoordinateDescentState{T}
     
     function CoordinateDescentState{T}(X, W, H, violation, violation_init) where T
         p, n, k = nmf_checksize(X, W, H)
-        new{T}(W * H, 
+        new{T}(W, 
                Matrix{T}(undef, k, k),
                Matrix{T}(undef, p, k),
                Matrix{T}(undef, n, k),
@@ -101,8 +101,9 @@ end
 prepare_state(::CoordinateDescentUpd{T}, X, W, H) where T = CoordinateDescentState{T}(X, W, H, zero(T), nothing)
 
 function evaluate_objv(::CoordinateDescentUpd{T}, s::CoordinateDescentState{T}, X, W, H) where T
-    mul!(s.WH, W, H)
-    convert(T, 0.5) * sqL2dist(X, s.WH)
+    # mul!(s.WH, W, H)
+    # convert(T, 0.5) * sqL2dist(X, s.WH)
+    return -1
 end
 
 "Updates W only"
@@ -160,7 +161,7 @@ end
 
 
 function update_wh!(upd::CoordinateDescentUpd{T}, s::CoordinateDescentState{T},
-                    X::AbstractArray{T}, W::AbstractArray{T}, H::AbstractArray{T}) where T
+                    X::Union{AbstractArray{T}, Factorization{T}}, W::AbstractArray{T}, H::AbstractArray{T}) where T
     violation = zero(T)
 
     # update W
