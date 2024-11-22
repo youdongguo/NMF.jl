@@ -10,7 +10,9 @@ function nnmf(X::AbstractMatrix{T}, k::Integer;
               W0::Union{AbstractMatrix{T}, Nothing}=nothing,
               H0::Union{AbstractMatrix{T}, Nothing}=nothing,
               update_H::Bool=true,
-              verbose::Bool=false) where T
+              verbose::Bool=false,
+              M = ones(size(X))) where T
+
 
     eltype(X) <: Number && all(t -> t >= zero(T), X) || throw(ArgumentError("The elements of X must be non-negative."))
 

@@ -3,6 +3,7 @@ using Test
 using Random
 using LinearAlgebra
 using StatsBase
+using ForwardDiff
 
 include("testproblems.jl")
 
@@ -13,7 +14,8 @@ tests = ["utils",
          "alspgrad",
          "coorddesc",
          "greedycd",
-         "interf"]
+         "interf",
+         "weightedcoorddesc"]
 
 println("Running tests:")
 @testset "All tests" begin
