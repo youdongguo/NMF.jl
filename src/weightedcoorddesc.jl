@@ -2,7 +2,7 @@ mutable struct WeightedCoordinateDescent{T}
     M::Matrix{T}
     maxiter::Int           # maximum number of iterations (in main procedure)
     verbose::Bool          # whether to show procedural information
-    tol::T                 # tolerance of changes on W and H upon convergence
+    tol::T                 # tolerance of changes on W and H triggering convergence
     update_H::Bool         # whether to update H
     shuffle::Bool          # # if true, randomize the order of coordinates in the CD solver           # mask matrix
     function WeightedCoordinateDescent{T}(M::Matrix{T};
