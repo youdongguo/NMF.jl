@@ -5,7 +5,7 @@ mutable struct WeightedCoordinateDescent{T}
     tol::T                 # tolerance of changes on W and H triggering convergence
     update_H::Bool         # whether to update H
     shuffle::Bool          # # if true, randomize the order of coordinates in the CD solver           # mask matrix
-    function WeightedCoordinateDescent{T}(M::Matrix{T};
+    function WeightedCoordinateDescent{T}(M::AbstractMatrix;
                                         maxiter::Integer=100,
                                         verbose::Bool=false,
                                         tol::Real=cbrt(eps(T)),
