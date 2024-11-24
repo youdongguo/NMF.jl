@@ -34,7 +34,7 @@ end
 
 mutable struct WeightedCoordinateDescentState{T}
     WH::Matrix{T}
-    
+
     function WeightedCoordinateDescentState{T}(W, H) where T
         new{T}(W*H)
     end
@@ -49,23 +49,27 @@ function evaluate_objv(u::WeightedCoordinateDescentUpd{T}, s::WeightedCoordinate
 end
 
 "Updates W only"
-function _update_weighted_coord_descent!(X, M, W, H)
+function _update_weighted_coord_descent!(X::AbstractArray{T}, M, W, H) where T
     ncomponents = size(W, 2)
     m, n = size(M)
+    numerator = zeros(T, m)
+    denominator = zeros(T, m)
     for t in 1:ncomponents
-        numerator = zeros(m)
-        denominator = zeros(m)
+        fill!(numerator, zero(T))
+        fill!(denominator, zero(T))
         for i in 1:m
             for k in 1:n
-                numerator[i] += M[i,k]^2*X[i, k]*H[t,k]
+                M_ik2 = M[i,k]^2
+                numerator[i] += M_ik2*X[i, k]*H[t,k]
                 for r in 1:ncomponents
                     r == t && continue
-                    numerator[i] -= M[i,k]^2*W[i,r]*H[r,k]*H[t,k]
+                    numerator[i] -= M_ik2*W[i,r]*H[r,k]*H[t,k]
                 end
-                denumerator[i] += M[i,k]^2*H[t,k]^2
+                denominator[i] += M_ik2*H[t,k]^2
             end
-            W[i,t] = max(numerator[i] / denumerator[i], zero(eltype(W)))
+            # W[i,t] = max(numerator[i] / denominator[i], zero(eltype(W)))
         end
+        W[:,t] = max.(numerator ./ denominator, zero(eltype(W)))
     end
     return W
 end
