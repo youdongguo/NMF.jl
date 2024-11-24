@@ -58,7 +58,8 @@ function _update_weighted_coord_descent!(X, M, W, H)
         for i in 1:m
             for k in 1:n
                 numerator[i] += M[i,k]^2*X[i, k]*H[t,k]
-                for r in filter!(x -> x != t, collect(1:ncomponents))
+                for r in 1:ncomponents
+                    r == t && continue
                     numerator[i] -= M[i,k]^2*W[i,r]*H[r,k]*H[t,k]
                 end
                 denumerator[i] += M[i,k]^2*H[t,k]^2
