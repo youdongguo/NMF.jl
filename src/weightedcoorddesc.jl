@@ -54,7 +54,7 @@ function _update_weighted_coord_descent!(X, M, W, H)
     m, n = size(M)
     for t in 1:ncomponents
         numerator = zeros(m)
-        denumerator = zeros(m)
+        denominator = zeros(m)
         for i in 1:m
             for k in 1:n
                 numerator[i] += M[i,k]^2*X[i, k]*H[t,k]
