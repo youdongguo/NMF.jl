@@ -45,7 +45,7 @@ prepare_state(::WeightedCoordinateDescentUpd{T}, ::AbstractArray{T}, W, H) where
 function evaluate_objv(u::WeightedCoordinateDescentUpd{T}, s::WeightedCoordinateDescentState{T}, X, W, H) where T
     M = u.M
     mul!(s.WH, W, H)
-    convert(T, 0.5) * sqL2dist(M.*X, M.*s.WH)
+    sqL2dist(M.*X, M.*s.WH) / 2
 end
 
 "Updates W only"
