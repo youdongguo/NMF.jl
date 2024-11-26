@@ -49,7 +49,7 @@ function evaluate_objv(u::WeightedCoordinateDescentUpd{T}, s::WeightedCoordinate
 end
 
 "Updates W only"
-function _update_weighted_coord_descent!(X::AbstractArray{T}, M, W, H) where T
+function _update_weighted_coord_descent!(X::AbstractArray{T}, M::AbstractArray{T}, W::AbstractArray{T}, H::AbstractArray{T}) where T
     ncomponents = size(W, 2)
     m, n = size(M)
     numerator = zeros(T, m)
@@ -67,9 +67,8 @@ function _update_weighted_coord_descent!(X::AbstractArray{T}, M, W, H) where T
                 end
                 denominator[i] += M_ik2*H[t,k]^2
             end
-            # W[i,t] = max(numerator[i] / denominator[i], zero(eltype(W)))
+            W[i,t] = max(numerator[i] / denominator[i], zero(eltype(W)))
         end
-        W[:,t] = max.(numerator ./ denominator, zero(eltype(W)))
     end
     return W
 end

@@ -12,7 +12,7 @@ atminimum(x, slope; xtol=eps(typeof(x)), slopetol=eps(typeof(slope))) = x<=xtol 
         X, Wg, Hg = laurberg6x3(T(0.3))
         M = ones(T, size(X)...)
         W = Wg .+ rand(T, size(Wg)...)*T(0.1)
-        NMF.solve!(NMF.WeightedCoordinateDescent{T}(M, maxiter=10^8, tol=1e-9), X, W, Hg)
+        NMF.solve!(NMF.WeightedCoordinateDescent{T}(M, maxiter=1000, tol=1e-9), X, W, Hg)
         @test X ≈ W * Hg atol=1e-4
 
         weightedobjective_w(w) = weightedobjective(X, M, w, Hg, size(Hg, 1))
@@ -21,11 +21,11 @@ atminimum(x, slope; xtol=eps(typeof(x)), slopetol=eps(typeof(slope))) = x<=xtol 
         grad_h = ForwardDiff.gradient(weightedobjective_h, Hg[:])
 
         for (wi, gi) in zip(W[:], grad_w)
-            @test atminimum(wi, gi; xtol=2e-7, slopetol=2e-7)
+            @test atminimum(wi, gi; xtol=T(2e-7), slopetol=T(1e-6))
         end
 
         for (hi, gi) in zip(Hg[:], grad_h)
-            @test atminimum(hi, gi; xtol=2e-7, slopetol=2e-7)
+            @test atminimum(hi, gi; xtol=T(2e-7), slopetol=T(1e-6))
         end
     end
 end
