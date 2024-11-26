@@ -19,6 +19,7 @@ module NMF
     include("alspgrad.jl")
     include("coorddesc.jl")
     include("greedycd.jl")
+    include("weightedcoorddesc.jl")
 
     include("interf.jl")
 
